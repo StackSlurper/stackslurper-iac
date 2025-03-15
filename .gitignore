@@ -39,4 +39,3 @@ terraform.rc
 # VSCode local settings (exclude personal settings but allow workspace recommendations)
 .vscode/*
 !.vscode/extensions.json
-!.vscode/settings.json
