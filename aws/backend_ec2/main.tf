@@ -47,3 +47,23 @@ resource "aws_security_group" "backend_security_group" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+resource "aws_route53_zone" "primary" {
+  name = "stackslurper.xyz"
+}
+
+resource "aws_route53_record" "root_a_record" {
+  zone_id = aws_route53_zone.primary.zone_id
+  name    = "stackslurper.xyz"
+  type    = "A"
+  ttl     = 300
+  records = [aws_instance.backend_server.public_ip]
+}
+
+resource "aws_route53_record" "www_cname" {
+  zone_id = aws_route53_zone.primary.zone_id
+  name    = "www.stackslurper.xyz"
+  type    = "CNAME"
+  ttl     = 300
+  records = ["stackslurper.xyz"]
+}

@@ -12,3 +12,8 @@ output "public_ip" {
   description = "Public IP address of the backend EC2 instance"
   value       = module.backend_ec2.public_ip
 }
+
+output "route53_nameservers" {
+  description = "AWS Route 53 nameservers for Namecheap"
+  value       = module.backend_ec2.route53_nameservers
+}
