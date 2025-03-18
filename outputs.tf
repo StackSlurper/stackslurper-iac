@@ -17,3 +17,8 @@ output "route53_nameservers" {
   description = "AWS Route 53 nameservers for Namecheap"
   value       = module.backend_ec2.route53_nameservers
 }
+
+output "kms_key_arn" {
+  description = "KMS Key ARN for Terraform Secrets"
+  value       = module.kms.kms_key_arn
+}

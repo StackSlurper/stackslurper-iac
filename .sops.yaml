@@ -1,0 +1,3 @@
+creation_rules:
+  - encrypted_suffix: _encrypted
+  - unencrypted_suffix: ""
