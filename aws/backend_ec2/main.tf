@@ -69,18 +69,18 @@ resource "aws_route53_record" "www_cname" {
 }
 
 resource "aws_route53_record" "mx1" {
-  zone_id = aws_route53_zone.primary.id
-  name    = "@"
+  zone_id = aws_route53_zone.primary.zone_id
+  name    = ""
   type    = "MX"
   ttl     = 300
   records = [
-    "10 mx1.privateemail.com.",
-    "20 mx2.privateemail.com.",
+    "10 mx1.privateemail.com",
+    "10 mx2.privateemail.com",
   ]
 }
 
 resource "aws_route53_record" "spf" {
-  zone_id = aws_route53_zone.primary.id
+  zone_id = aws_route53_zone.primary.zone_id
   name    = "@"
   type    = "TXT"
   ttl     = 300
@@ -90,7 +90,7 @@ resource "aws_route53_record" "spf" {
 }
 
 resource "aws_route53_record" "dmarc" {
-  zone_id = aws_route53_zone.primary.id
+  zone_id = aws_route53_zone.primary.zone_id
   name    = "_dmarc"
   type    = "TXT"
   ttl     = 300
@@ -106,11 +106,6 @@ resource "aws_route53_record" "private_email_dkim" {
   ttl     = 300
   records = [
     // public key for DKIM, no need to encrypt
-    "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxzVluVaRDrru+dQwkaV2",
-    "7+wmn9EuF7LcAOrMnIyORookIkPhxKGAJqtEcEorpXFLKB9/pVenGvp76Qv0P/m8Fwy384axkUPAsAJqw",
-    "Jp96GttVxFjXpVAcYmW1ikc5s3AqaOXpTDZn4GGqzacOZsng3KAyOukcbQzDiuHGsv7UE6+V8xuB6ATMw",
-    "Hym5NHUaYXXqHTsVb66kL6NU8ij4EjcY0b/AG7fhvy6kbgDKQsfRlMCo+iaXNbBfnxf4XMx/M+s4NCraS",
-    "TbNq5MWuhfgxkJiB1dioDM1B/W5InL9uisIiAuOW9OYZk4++cQrAjEJJ0e2dC6d1wyEk2ScYglLKHuwID",
-    "AQAB"
+    "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxzVluVaRDrru+dQwkaV27+wmn9EuF7L\"\"cAOrMnIyORookIkPhxKGAJqtEcEorpXFLKB9/pVenGvp76Qv0P/m8Fwy384axkUPAsAJqwJp96GttVxFjXpVAcYmW1ik\"\"c5s3AqaOXpTDZn4GGqzacOZsng3KAyOukcbQzDiuHGsv7UE6+V8xuB6ATMwHym5NHUaYXXqHTsVb66kL6NU8ij4EjcY0b/\"\"AG7fhvy6kbgDKQsfRlMCo+iaXNbBfnxf4XMx/M+s4NCraSTbNq5MWuhfgxkJiB1dioDM1B/W5InL9uisIiAuOW9OYZk4++\"\"cQrAjEJJ0e2dC6d1wyEk2ScYglLKHuwIDAQAB"
   ]
 }
