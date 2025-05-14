@@ -12,3 +12,7 @@ output "route53_nameservers" {
   #   - 20+ domains in your account
   #   - or purchases totaling $50+ within the last 2 years.
 }
+output "route53_zone_id" {
+  value       = aws_route53_zone.primary.zone_id
+  description = "AWS Route 53 zone ID for Namecheap"
+}
