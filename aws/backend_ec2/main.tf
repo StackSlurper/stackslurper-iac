@@ -105,7 +105,12 @@ resource "aws_route53_record" "private_email_dkim" {
   type    = "TXT"
   ttl     = 300
   records = [
-    // This is a public key, no need to encrypt it
-    "v=DKIM1;k=rsa;p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxzVluVaRDrru+dQwkaV27+wmn9EuF7LcAOrMnIyORookIkPhxKGAJqtEcEorpXFLKB9/pVenGvp76Qv0P/m8Fwy384axkUPAsAJqwJp96GttVxFjXpVAcYmW1ikc5s3AqaOXpTDZn4GGqzacOZsng3KAyOukcbQzDiuHGsv7UE6+V8xuB6ATMwHym5NHUaYXXqHTsVb66kL6NU8ij4EjcY0b/AG7fhvy6kbgDKQsfRlMCo+iaXNbBfnxf4XMx/M+s4NCraSTbNq5MWuhfgxkJiB1dioDM1B/W5InL9uisIiAuOW9OYZk4++cQrAjEJJ0e2dC6d1wyEk2ScYglLKHuwIDAQAB"
+    // public key for DKIM, no need to encrypt
+    "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxzVluVaRDrru+dQwkaV2",
+    "7+wmn9EuF7LcAOrMnIyORookIkPhxKGAJqtEcEorpXFLKB9/pVenGvp76Qv0P/m8Fwy384axkUPAsAJqw",
+    "Jp96GttVxFjXpVAcYmW1ikc5s3AqaOXpTDZn4GGqzacOZsng3KAyOukcbQzDiuHGsv7UE6+V8xuB6ATMw",
+    "Hym5NHUaYXXqHTsVb66kL6NU8ij4EjcY0b/AG7fhvy6kbgDKQsfRlMCo+iaXNbBfnxf4XMx/M+s4NCraS",
+    "TbNq5MWuhfgxkJiB1dioDM1B/W5InL9uisIiAuOW9OYZk4++cQrAjEJJ0e2dC6d1wyEk2ScYglLKHuwID",
+    "AQAB"
   ]
 }
