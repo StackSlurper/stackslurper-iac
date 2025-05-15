@@ -111,3 +111,117 @@ resource "aws_acm_certificate_validation" "cert" {
     for record in aws_route53_record.cert_validation : record.fqdn
   ]
 }
+
+
+# 🔍 Look up the default VPC in this region (ap-southeast-1)
+data "aws_vpc" "default" {
+  default = true
+}
+
+# 🔍 Get all subnets in the default VPC.
+# We'll assume they're public, since AWS marks default subnets as public by default.
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
+
+# 🔍 Look for your ACM certificate (must already be validated and in "ISSUED" status)
+data "aws_acm_certificate" "stackslurper" {
+  domain      = "stackslurper.xyz" # your domain name
+  statuses    = ["ISSUED"]         # only use active certificates
+  most_recent = true               # if there are multiple, pick the latest
+}
+
+# 🔐 Create a Security Group for the ALB
+# Allows inbound HTTP (80) and HTTPS (443) from the world
+resource "aws_security_group" "alb_sg" {
+  name        = "alb-sg"
+  description = "Allow HTTP and HTTPS"
+  vpc_id      = data.aws_vpc.default.id
+
+  ingress {
+    from_port   = 80 # HTTP
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # allow all IPs
+  }
+
+  ingress {
+    from_port   = 443 # HTTPS
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0 # allow all outbound traffic
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# 🌐 Create the Application Load Balancer
+resource "aws_lb" "app" {
+  name               = "stackslurper-alb"
+  internal           = false         # public ALB (internet-facing)
+  load_balancer_type = "application" # layer 7 (HTTP/HTTPS)
+  subnets            = data.aws_subnets.default.ids
+  security_groups    = [aws_security_group.alb_sg.id]
+}
+
+# 🧑‍🍳 Target Group — where the ALB forwards traffic to
+# In this case, your EC2 instance on port 80
+resource "aws_lb_target_group" "backend" {
+  name     = "stackslurper-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = data.aws_vpc.default.id
+
+  health_check {
+    path     = "/" # ping this path to check if healthy
+    protocol = "HTTP"
+    matcher  = "200" # expect a 200 OK
+  }
+}
+
+# 🔗 Attach your EC2 instance to the Target Group
+# This connects your instance to the ALB
+resource "aws_lb_target_group_attachment" "backend_instance" {
+  target_group_arn = aws_lb_target_group.backend.arn
+  target_id        = aws_instance.backend_server.id
+  port             = 80
+}
+
+# 🔒 HTTPS Listener (port 443) using ACM cert
+# This is where your HTTPS traffic is terminated
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.app.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = data.aws_acm_certificate.stackslurper.arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend.arn
+  }
+}
+
+# ↪️ Optional: HTTP Listener (port 80) to redirect to HTTPS
+resource "aws_lb_listener" "http_redirect" {
+  load_balancer_arn = aws_lb.app.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301" # permanent redirect
+    }
+  }
+}
