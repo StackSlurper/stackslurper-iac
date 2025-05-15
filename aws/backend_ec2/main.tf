@@ -67,3 +67,47 @@ resource "aws_route53_record" "www_cname" {
   ttl     = 300
   records = ["stackslurper.xyz"]
 }
+
+resource "aws_acm_certificate" "cert" {
+  # Your domain name — SSL will protect this
+  domain_name = "stackslurper.xyz"
+
+  # ACM will ask you to verify ownership via a DNS record
+  validation_method = "DNS"
+
+  # Optional: also protect www.stackslurper.xyz
+  subject_alternative_names = ["www.stackslurper.xyz"]
+
+  # This ensures Terraform creates the new cert before deleting an old one (helps with updates)
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_route53_record" "cert_validation" {
+  # This loops through each domain ACM asks us to verify
+  for_each = {
+    for dvo in aws_acm_certificate.cert.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name  # The name of the DNS record ACM wants
+      record = dvo.resource_record_value # The value ACM wants in that record
+      type   = dvo.resource_record_type  # Usually "CNAME"
+    }
+  }
+
+  # This is what actually creates the validation record in Route 53
+  name    = each.value.name
+  type    = each.value.type
+  ttl     = 60
+  zone_id = aws_route53_zone.primary.zone_id
+  records = [each.value.record]
+}
+
+resource "aws_acm_certificate_validation" "cert" {
+  # Which certificate to validate (from step 1)
+  certificate_arn = aws_acm_certificate.cert.arn
+
+  # Which DNS records we just created for validation
+  validation_record_fqdns = [
+    for record in aws_route53_record.cert_validation : record.fqdn
+  ]
+}
