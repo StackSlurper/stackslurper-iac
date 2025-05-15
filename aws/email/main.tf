@@ -5,8 +5,8 @@ resource "aws_route53_record" "mx1" {
   type    = "MX"
   ttl     = 300
   records = [
-    "10 mx1.privateemail.com",
-    "10 mx2.privateemail.com",
+    "10 mx1.privateemail.com.",
+    "10 mx2.privateemail.com.",
   ]
 }
 
