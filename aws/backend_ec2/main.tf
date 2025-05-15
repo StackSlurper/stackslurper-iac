@@ -52,14 +52,6 @@ resource "aws_route53_zone" "primary" {
   name = "stackslurper.xyz"
 }
 
-resource "aws_route53_record" "root_a_record" {
-  zone_id = aws_route53_zone.primary.zone_id
-  name    = "stackslurper.xyz"
-  type    = "A"
-  ttl     = 300
-  records = [aws_instance.backend_server.public_ip]
-}
-
 resource "aws_route53_record" "www_cname" {
   zone_id = aws_route53_zone.primary.zone_id
   name    = "www.stackslurper.xyz"
@@ -223,5 +215,18 @@ resource "aws_lb_listener" "http_redirect" {
       protocol    = "HTTPS"
       status_code = "HTTP_301" # permanent redirect
     }
+  }
+}
+
+
+resource "aws_route53_record" "root_a_record" {
+  zone_id = aws_route53_zone.primary.zone_id
+  name    = "stackslurper.xyz"
+  type    = "A"
+
+  alias {
+    name                   = aws_lb.app.dns_name
+    zone_id                = aws_lb.app.zone_id
+    evaluate_target_health = true
   }
 }
