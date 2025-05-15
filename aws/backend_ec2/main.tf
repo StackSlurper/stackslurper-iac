@@ -9,12 +9,22 @@ resource "aws_instance" "backend_server" {
   # basic Hello World server
   user_data = <<-EOF
               #!/bin/bash
+
+              # Add dev SSH keys
+              mkdir -p /home/ec2-user/.ssh
+              chmod 700 /home/ec2-user/.ssh
+              touch /home/ec2-user/.ssh/authorized_keys
+              chmod 600 /home/ec2-user/.ssh/authorized_keys
+              chown -R ec2-user:ec2-user /home/ec2-user/.ssh
+
+              ${join("\n", formatlist("echo '%s' >> /home/ec2-user/.ssh/authorized_keys", var.dev_ssh_keys))}
+
               sudo yum update -y
               sudo amazon-linux-extras enable nginx1
               sudo yum install -y nginx
               sudo systemctl start nginx
               sudo systemctl enable nginx
-              echo "<h1>Hello, World - test changes!</h1>" | sudo tee /usr/share/nginx/html/index.html
+              echo "<h1>Hello, World - with SSH!</h1>" | sudo tee /usr/share/nginx/html/index.html
               sudo systemctl restart nginx
               EOF
 }
