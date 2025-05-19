@@ -63,16 +63,13 @@ resource "aws_route53_record" "www_cname" {
 }
 
 resource "aws_acm_certificate" "cert" {
-  # Your domain name — SSL will protect this
-  domain_name = "stackslurper.xyz"
-
-  # ACM will ask you to verify ownership via a DNS record
+  domain_name       = "stackslurper.xyz"
   validation_method = "DNS"
+  subject_alternative_names = [
+    "www.stackslurper.xyz",
+    "api.stackslurper.xyz"
+  ]
 
-  # Optional: also protect www.stackslurper.xyz
-  subject_alternative_names = ["www.stackslurper.xyz"]
-
-  # This ensures Terraform creates the new cert before deleting an old one (helps with updates)
   lifecycle {
     create_before_destroy = true
   }
@@ -220,10 +217,21 @@ resource "aws_lb_listener" "http_redirect" {
   }
 }
 
-
 resource "aws_route53_record" "root_a_record" {
   zone_id = aws_route53_zone.primary.zone_id
   name    = "stackslurper.xyz"
+  type    = "A"
+
+  alias {
+    name                   = aws_lb.app.dns_name
+    zone_id                = aws_lb.app.zone_id
+    evaluate_target_health = true
+  }
+}
+
+resource "aws_route53_record" "api_subdomain" {
+  zone_id = aws_route53_zone.primary.zone_id
+  name    = "api.stackslurper.xyz"
   type    = "A"
 
   alias {
