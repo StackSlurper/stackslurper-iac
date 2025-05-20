@@ -16,3 +16,7 @@ output "route53_zone_id" {
   value       = aws_route53_zone.primary.zone_id
   description = "AWS Route 53 zone ID for Namecheap"
 }
+
+output "security_group_id" {
+  value = aws_security_group.backend_security_group.id
+}

@@ -22,3 +22,14 @@ output "kms_key_arn" {
   description = "KMS Key ARN for Terraform Secrets"
   value       = module.kms.kms_key_arn
 }
+
+output "rds_endpoint" {
+  value       = module.database.rds_endpoint
+  description = "RDS endpoint for application connection"
+}
+
+output "rds_connection_string" {
+  value       = module.database.rds_connection_string
+  description = "PostgreSQL connection string"
+  sensitive   = true
+}
